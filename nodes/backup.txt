@@ -1,0 +1,12 @@
+# ===================================================================
+# Backup / Secondary V2Ray Nodes Configuration List
+#
+# You can query specifically from this file via: ?file=backup
+# Or serve all combined nodes by default.
+# ===================================================================
+
+# Example Backup VLESS node
+vless://22222222-3333-4444-5555-666666666666@backup-vless.com:443?type=grpc&security=tls&serviceName=vless-grpc&sni=backup-vless.com#NL-Amsterdam-Backup-01
+
+# Example Backup Trojan node
+trojan://backuppassword456@backup-trojan.com:443?security=tls&sni=backup-trojan.com#FR-Paris-Backup-02

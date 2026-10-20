@@ -1,0 +1,6 @@
+{
+  "xrayPath": "/home/unreal/.local/share/PattN/bin/xray/xray",
+  "testUrl": "http://cp.cloudflare.com/generate_204",
+  "timeoutMs": 5000,
+  "concurrency": 8
+}

@@ -1,0 +1,40 @@
+{
+  "name": "cf-sub",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker V2Ray subscription provider serving nodes from .txt files with URL secret security",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "predev": "node --experimental-strip-types tools/generate-profiles.ts",
+    "predeploy": "node --experimental-strip-types tools/generate-profiles.ts",
+    "pretypecheck": "node --experimental-strip-types tools/generate-profiles.ts",
+    "generate-profiles": "node --experimental-strip-types tools/generate-profiles.ts",
+    "dev": "wrangler dev --env-file .env",
+    "deploy": "wrangler deploy --env-file .env",
+    "secret:put": "wrangler secret put SUB_SECRET --env-file .env",
+    "launch": "./launch.sh",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types",
+    "curate": "node --experimental-strip-types tools/curator.ts --no-chain && node --experimental-strip-types tools/generate-profiles.ts",
+    "curate:chain": "node --experimental-strip-types tools/curator.ts --chain && node --experimental-strip-types tools/generate-profiles.ts",
+    "test-nodes": "node --experimental-strip-types tools/curator.ts --no-chain && node --experimental-strip-types tools/generate-profiles.ts",
+    "test-nodes:chain": "node --experimental-strip-types tools/curator.ts --chain && node --experimental-strip-types tools/generate-profiles.ts"
+  },
+  "keywords": [
+    "cloudflare-worker",
+    "v2ray",
+    "v2ray-subscription",
+    "sub-provider",
+    "vless",
+    "vmess",
+    "trojan"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261019.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.151.2"
+  }
+}

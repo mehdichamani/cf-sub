@@ -1,0 +1,31 @@
+# ===================================================================
+# Primary V2Ray / Xray Nodes Configuration List
+#
+# Paste your node links below, one per line.
+# Supported protocols:
+#   - vless://
+#   - vmess://
+#   - trojan://
+#   - ss:// (Shadowsocks)
+#   - ssr:// (ShadowsocksR)
+#   - hysteria2:// or hy2://
+#   - tuic://
+#   - wireguard://
+#
+# Lines starting with '#' or '//' and blank lines are ignored.
+# ===================================================================
+
+# Example VLESS node with WebSocket + TLS
+vless://11111111-2222-3333-4444-555555555555@example-vless.com:443?type=ws&security=tls&path=%2Fvless-ws&sni=example-vless.com#US-Ultra-Fast-01
+
+# Example Trojan node
+trojan://secretpassword123@example-trojan.com:443?security=tls&sni=example-trojan.com#DE-Frankfurt-01
+
+# Example VMess node (standard base64 json)
+vmess://eyJhZGQiOiJleGFtcGxlLXZtZXNzLmNvbSIsImFpZCI6IjAiLCJob3N0IjoiZXhhbXBsZS12bWVzcy5jb20iLCJpZCI6IjExMTExMTExLTIyMjItMzMzMy00NDQ0LTU1NTU1NTU1NTU1NSIsIm5ldCI6IndzIiwicGF0aCI6Ii92bWVzcyIsInBvcnQiOiI0NDMiLCJwcyI6IlNHLVRlbGVjb20tMDEiLCJ0bHMiOiJ0bHMiLCJ0eXBlIjoibm9uZSIsInYiOiIyIn0=
+
+# Example Shadowsocks node
+ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM=@example-ss.com:8388#JP-Tokyo-01
+
+# Example Hysteria2 node
+hysteria2://mypassword@example-hy2.com:443/?sni=example-hy2.com&alpn=h3&insecure=0#UK-London-Hy2
