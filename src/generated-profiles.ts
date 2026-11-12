@@ -1,58 +1,68 @@
 // AUTO-GENERATED FILE. DO NOT EDIT DIRECTLY.
 // Generated dynamically by scanning profiles/ folder during build/dev.
 
-import profileContent_0 from '../profiles/50.enhanced.txt';
-import profileContent_1 from '../profiles/TCB.enhanced.txt';
-import profileContent_2 from '../profiles/50.chain.txt';
-import profileContent_3 from '../profiles/50.txt';
-import profileContent_4 from '../profiles/TCB.txt';
+import profileContent_0 from '../profiles/SS.enhanced.txt';
+import profileContent_1 from '../profiles/durable.txt';
+import profileContent_2 from '../profiles/SS.chain.txt';
+import profileContent_3 from '../profiles/SS.txt';
+import profileContent_4 from '../profiles/SS2.txt';
+import profileContent_5 from '../profiles/TCB-Steveargon3.txt';
 
 import { ProfileInfo } from './types';
 
 export const PROFILES: Record<string, ProfileInfo> = {
-  "50.enhanced": {
-    id: "50.enhanced",
-    name: "50 (⚡ Enhanced & Fast)",
-    filename: "50.enhanced.txt",
+  "SS.enhanced": {
+    id: "SS.enhanced",
+    name: "SS (⚡ Enhanced & Fast)",
+    filename: "SS.enhanced.txt",
     content: profileContent_0,
     isEnhanced: true,
     isChain: false,
-    baseGroup: "50",
+    baseGroup: "SS",
   },
-  "TCB.enhanced": {
-    id: "TCB.enhanced",
-    name: "TCB (⚡ Enhanced & Fast)",
-    filename: "TCB.enhanced.txt",
+  "durable": {
+    id: "durable",
+    name: "durable (اصل / کامل)",
+    filename: "durable.txt",
     content: profileContent_1,
-    isEnhanced: true,
+    isEnhanced: false,
     isChain: false,
-    baseGroup: "TCB",
+    baseGroup: "durable",
   },
-  "50.chain": {
-    id: "50.chain",
-    name: "50 (🔗 Chained Proxy)",
-    filename: "50.chain.txt",
+  "SS.chain": {
+    id: "SS.chain",
+    name: "SS (🔗 Chained Proxy)",
+    filename: "SS.chain.txt",
     content: profileContent_2,
     isEnhanced: false,
     isChain: true,
-    baseGroup: "50",
+    baseGroup: "SS",
   },
-  "50": {
-    id: "50",
-    name: "50 (اصل / کامل)",
-    filename: "50.txt",
+  "SS": {
+    id: "SS",
+    name: "SS (اصل / کامل)",
+    filename: "SS.txt",
     content: profileContent_3,
     isEnhanced: false,
     isChain: false,
-    baseGroup: "50",
+    baseGroup: "SS",
   },
-  "TCB": {
-    id: "TCB",
-    name: "TCB (اصل / کامل)",
-    filename: "TCB.txt",
+  "SS2": {
+    id: "SS2",
+    name: "SS2 (اصل / کامل)",
+    filename: "SS2.txt",
     content: profileContent_4,
     isEnhanced: false,
     isChain: false,
-    baseGroup: "TCB",
+    baseGroup: "SS2",
+  },
+  "TCB-Steveargon3": {
+    id: "TCB-Steveargon3",
+    name: "TCB-Steveargon3 (اصل / کامل)",
+    filename: "TCB-Steveargon3.txt",
+    content: profileContent_5,
+    isEnhanced: false,
+    isChain: false,
+    baseGroup: "TCB-Steveargon3",
   },
 };

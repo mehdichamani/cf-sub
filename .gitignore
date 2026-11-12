@@ -8,3 +8,4 @@ dist/
 .DS_Store
 profiles/
 profiles_archive/
+src/generated-profiles.ts

@@ -42,19 +42,110 @@ check_credentials() {
   return 0
 }
 
+select_profile_file() {
+  local files=()
+  for f in profiles/*.txt; do
+    [ -e "$f" ] || continue
+    local fname
+    fname="$(basename "$f")"
+    if [[ "$fname" != *".enhanced.txt"* && "$fname" != *".chain.txt"* ]]; then
+      files+=("$fname")
+    fi
+  done
+
+  if [ ${#files[@]} -eq 0 ]; then
+    echo -e "${YELLOW}⚠️ No source .txt files found in profiles/ directory.${NC}"
+    SELECTED_FILE=""
+    return 1
+  fi
+
+  if command -v gum >/dev/null 2>&1; then
+    echo -e "${CYAN}Select file to test:${NC}"
+    local selection
+    selection=$(gum choose "All files (Run on all profiles)" "${files[@]}" "Cancel")
+    if [ "$selection" = "Cancel" ] || [ -z "$selection" ]; then
+      SELECTED_FILE="__CANCEL__"
+      return 1
+    elif [ "$selection" = "All files (Run on all profiles)" ]; then
+      SELECTED_FILE=""
+      return 0
+    else
+      SELECTED_FILE="$selection"
+      return 0
+    fi
+  else
+    echo -e "\n${CYAN}Select file to test:${NC}"
+    echo "0) All files (Run on all profiles)"
+    local i=1
+    for f in "${files[@]}"; do
+      echo "$i) $f"
+      ((i++))
+    done
+    echo "c) Cancel"
+    echo -n "Select option [0-$((i-1)) / c]: "
+    read -r opt
+    if [ "$opt" = "c" ] || [ "$opt" = "C" ]; then
+      SELECTED_FILE="__CANCEL__"
+      return 1
+    elif [ "$opt" = "0" ] || [ -z "$opt" ]; then
+      SELECTED_FILE=""
+      return 0
+    elif [[ "$opt" =~ ^[0-9]+$ ]] && [ "$opt" -ge 1 ] && [ "$opt" -le "${#files[@]}" ]; then
+      SELECTED_FILE="${files[$((opt-1))]}"
+      return 0
+    else
+      echo -e "${RED}Invalid selection!${NC}"
+      SELECTED_FILE="__CANCEL__"
+      return 1
+    fi
+  fi
+}
+
 # 1. Direct Node Test
 do_test() {
+  local target_file="$1"
+  if [ -z "$target_file" ]; then
+    select_profile_file || {
+      [ "$SELECTED_FILE" = "__CANCEL__" ] && return 0
+      return 1
+    }
+    target_file="$SELECTED_FILE"
+  fi
+
   echo -e "\n${BLUE}=======================================${NC}"
-  echo -e "${CYAN}🔄 Running direct node test & curation (Direct)...${NC}"
+  if [ -n "$target_file" ]; then
+    echo -e "${CYAN}🔄 Running direct node test for: ${BOLD}${target_file}${NC}..."
+  else
+    echo -e "${CYAN}🔄 Running direct node test & curation (All Files)...${NC}"
+  fi
   echo -e "${BLUE}=======================================${NC}\n"
-  pnpm run curate
+
+  if [ -n "$target_file" ]; then
+    node --experimental-strip-types tools/curator.ts --no-chain --file "$target_file"
+    node --experimental-strip-types tools/generate-profiles.ts
+  else
+    pnpm run curate
+  fi
   echo -e "\n${GREEN}✔ Direct node test completed successfully.${NC}\n"
 }
 
 # 2. Chained Node Test
 do_test_chain() {
+  local target_file="$1"
+  if [ -z "$target_file" ]; then
+    select_profile_file || {
+      [ "$SELECTED_FILE" = "__CANCEL__" ] && return 0
+      return 1
+    }
+    target_file="$SELECTED_FILE"
+  fi
+
   echo -e "\n${BLUE}=======================================${NC}"
-  echo -e "${MAGENTA}🔗 Running chained node test & curation (Chain Test)...${NC}"
+  if [ -n "$target_file" ]; then
+    echo -e "${MAGENTA}🔗 Running chained node test for: ${BOLD}${target_file}${NC}..."
+  else
+    echo -e "${MAGENTA}🔗 Running chained node test & curation (All Files)...${NC}"
+  fi
   echo -e "${BLUE}=======================================${NC}\n"
   ensure_env
   local current_chain
@@ -64,7 +155,13 @@ do_test_chain() {
     echo "CHAIN_PROXY=\"$current_chain\"" >> "$ENV_FILE"
   fi
   echo -e "${YELLOW}Landing Proxy: ${BOLD}${current_chain}${NC}\n"
-  pnpm run curate:chain
+
+  if [ -n "$target_file" ]; then
+    node --experimental-strip-types tools/curator.ts --chain --file "$target_file"
+    node --experimental-strip-types tools/generate-profiles.ts
+  else
+    pnpm run curate:chain
+  fi
   echo -e "\n${GREEN}✔ Chained node test completed successfully.${NC}\n"
 }
 
@@ -191,10 +288,10 @@ menu_fallback() {
 # Direct CLI arguments support
 case "$1" in
   test|curate)
-    do_test
+    do_test "$2"
     ;;
   test:chain|chain|curate:chain)
-    do_test_chain
+    do_test_chain "$2"
     ;;
   dev|local)
     do_dev
