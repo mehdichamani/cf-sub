@@ -36,7 +36,6 @@ const files = fs
   .readdirSync(profilesDir)
   .filter((f) => f.endsWith('.txt') || f.endsWith('.json'))
   .sort((a, b) => {
-    // Put enhanced files first, then alphabetical
     const aEnh = a.includes('.enhanced.');
     const bEnh = b.includes('.enhanced.');
     if (aEnh && !bEnh) return -1;
@@ -44,11 +43,11 @@ const files = fs
     return a.localeCompare(b);
   });
 
-let importsCode = '';
 let entriesCode = '';
 
-files.forEach((file, idx) => {
-  const varName = `profileContent_${idx}`;
+files.forEach((file) => {
+  const filePath = path.join(profilesDir, file);
+  const rawContent = fs.readFileSync(filePath, 'utf-8');
   const isJson = file.endsWith('.json');
   const ext = isJson ? '.json' : '.txt';
   const id = file.slice(0, -ext.length);
@@ -65,7 +64,6 @@ files.forEach((file, idx) => {
   // Get user-provided metadata from profiles.yaml
   const meta: ProfileMetadata = profilesMeta[id] || profilesMeta[baseGroup] || {};
 
-  // Determine display name
   let displayName = meta.name;
   if (!displayName) {
     if (isChain) {
@@ -78,7 +76,6 @@ files.forEach((file, idx) => {
       displayName = `${baseGroup} (اصل / کامل)`;
     }
   } else {
-    // If name is configured in metadata but this is an enhanced/chain variation
     if (isEnhanced && !displayName.includes('Enhanced') && !displayName.includes('⚡')) {
       displayName += ' ⚡ (Enhanced)';
     } else if (isChain && !displayName.includes('Chain') && !displayName.includes('🔗')) {
@@ -86,15 +83,13 @@ files.forEach((file, idx) => {
     }
   }
 
-  importsCode += `import ${varName} from '../profiles/${file}';\n`;
-  const contentExpr = isJson ? `typeof ${varName} === 'string' ? ${varName} : JSON.stringify(${varName}, null, 2)` : varName;
   entriesCode +=
     `  ${JSON.stringify(id)}: {\n` +
     `    id: ${JSON.stringify(id)},\n` +
     `    name: ${JSON.stringify(displayName)},\n` +
     `    filename: ${JSON.stringify(file)},\n` +
     `    format: ${JSON.stringify(isJson ? 'json' : 'txt')},\n` +
-    `    content: ${contentExpr},\n` +
+    `    content: ${JSON.stringify(rawContent)},\n` +
     `    isEnhanced: ${isEnhanced},\n` +
     `    isChain: ${isChain},\n` +
     `    baseGroup: ${JSON.stringify(baseGroup)},\n` +
@@ -106,9 +101,8 @@ files.forEach((file, idx) => {
 });
 
 const generatedContent = `// AUTO-GENERATED FILE. DO NOT EDIT DIRECTLY.
-// Generated dynamically by scanning profiles/ folder and profiles.yaml during build/dev.
+// Generated dynamically by inlining profiles/ content and profiles.yaml metadata during build/dev.
 
-${importsCode}
 import { ProfileInfo } from './types';
 
 export const PROFILES: Record<string, ProfileInfo> = {
@@ -116,4 +110,4 @@ ${entriesCode}};
 `;
 
 fs.writeFileSync(outputFile, generatedContent, 'utf-8');
-console.log(`✨ Dynamically loaded ${files.length} profiles from profiles/ directory into src/generated-profiles.ts`);
+console.log(`✨ Inlined ${files.length} profiles from profiles/ directory into src/generated-profiles.ts`);
