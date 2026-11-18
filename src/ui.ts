@@ -1,125 +1,154 @@
 import { PROFILES } from './nodes';
 
+/**
+ * Common Cyber Freedom / Anti-Censorship styling with faint laser grid & red neon accents
+ */
+const sharedStyles = `
+  :root {
+    --bg: #07090e;
+    --card-bg: rgba(14, 18, 27, 0.85);
+    --card-border: rgba(239, 68, 68, 0.22);
+    --card-hover: rgba(20, 26, 38, 0.95);
+    --red: #ef4444;
+    --red-glow: rgba(239, 68, 68, 0.35);
+    --red-hover: #dc2626;
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --mono-font: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Vazirmatn", Tahoma, sans-serif; }
+  
+  body {
+    background-color: var(--bg);
+    /* Faint cyber laser grid background */
+    background-image: 
+      linear-gradient(to right, rgba(239, 68, 68, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(239, 68, 68, 0.05) 1px, transparent 1px),
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(220, 38, 38, 0.18), transparent 75%);
+    background-size: 38px 38px, 38px 38px, 100% 100%;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .laser-accent {
+    color: var(--red);
+    text-shadow: 0 0 10px var(--red-glow);
+  }
+`;
+
 export function renderLoginPage(errorMessage = ''): string {
   return `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دریافت لینک سابسکریپشن | ورود</title>
+  <title>دسترسی آزاد به اینترنت | ورود</title>
   <style>
-    :root {
-      --bg: #0b0f19;
-      --card-bg: #151e2e;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #243044;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Vazirmatn", Tahoma, sans-serif; }
+    ${sharedStyles}
     body {
-      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 100%);
-      color: var(--text);
-      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
     }
-    .card {
+    .login-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 1.25rem;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: 1rem;
       padding: 2.5rem 2rem;
       width: 100%;
-      max-width: 420px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      max-width: 400px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(239, 68, 68, 0.08);
       text-align: center;
     }
-    .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
+    .freedom-symbol {
+      font-size: 2.8rem;
+      margin-bottom: 0.8rem;
       display: inline-block;
+      filter: drop-shadow(0 0 12px var(--red-glow));
     }
     h1 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.4rem;
     }
     p {
       color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-      line-height: 1.6;
+      font-size: 0.85rem;
+      margin-bottom: 1.8rem;
+      line-height: 1.5;
     }
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
       text-align: right;
     }
     label {
       display: block;
-      margin-bottom: 0.5rem;
-      font-size: 0.85rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
     }
     input[type="password"] {
       width: 100%;
       padding: 0.85rem 1rem;
-      background: #0b0f19;
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
+      background: rgba(7, 9, 14, 0.8);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 0.5rem;
       color: #fff;
       font-size: 1rem;
       direction: ltr;
       text-align: center;
-      transition: all 0.2s;
       outline: none;
+      transition: all 0.2s;
     }
-    input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    input[type="password"]:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
     }
     .error-msg {
       background: rgba(239, 68, 68, 0.15);
       color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 0.75rem;
-      border-radius: 0.6rem;
-      font-size: 0.85rem;
-      margin-bottom: 1.25rem;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 0.65rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
     }
     button {
       width: 100%;
-      padding: 0.9rem;
-      background: var(--primary);
+      padding: 0.85rem;
+      background: var(--red);
       color: white;
       border: none;
-      border-radius: 0.75rem;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+      transition: all 0.2s;
     }
     button:hover {
-      background: var(--primary-hover);
+      background: var(--red-hover);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">🔐</div>
-    <h1>احراز هویت سابسکریپشن</h1>
-    <p>جهت دسترسی به لینک‌ها و QR کدها، رمز عبور اختصاصی (Secret) را وارد نمایید.</p>
+  <div class="login-card">
+    <div class="freedom-symbol">🕊️</div>
+    <h1>احراز هویت <span class="laser-accent">دسترسی آزاد</span></h1>
+    <p>جهت دریافت سابسکریپشن و دور زدن فیلترینگ، کلید امنیتی را وارد نمایید.</p>
     
     ${errorMessage ? `<div class="error-msg">${errorMessage}</div>` : ''}
 
     <form method="POST" action="/">
       <div class="form-group">
-        <label for="secret">رمز عبور (Secret Key):</label>
+        <label for="secret">کلید امنیتی (Secret Key):</label>
         <input type="password" id="secret" name="secret" placeholder="••••••••••••" autofocus required>
       </div>
-      <button type="submit">ورود و مشاهده لینک‌ها</button>
+      <button type="submit">ورود به پنل</button>
     </form>
   </div>
 </body>
@@ -134,347 +163,181 @@ export function renderDashboard(secret: string, origin: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>پروفایل‌ها و لینک‌های سابسکریپشن</title>
-  <!-- QRCode library -->
+  <title>درگاه سابسکریپشن ضد سانسور</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    :root {
-      --bg: #0b0f19;
-      --card-bg: #151e2e;
-      --card-hover: #192437;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --enhanced-bg: rgba(16, 185, 129, 0.12);
-      --enhanced-border: #10b981;
-      --enhanced-badge: #34d399;
-      --chain-bg: rgba(168, 85, 247, 0.12);
-      --chain-border: #a855f7;
-      --chain-badge: #c084fc;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #243044;
-      --group-border: #1e293b;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Vazirmatn", Tahoma, sans-serif; }
+    ${sharedStyles}
     body {
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
       padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .container {
-      max-width: 860px;
-      margin: 0 auto;
+    .wrapper {
+      width: 100%;
+      max-width: 820px;
     }
     header {
+      margin-bottom: 2rem;
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1.25rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+      padding-bottom: 1rem;
     }
-    .header-title h1 {
-      font-size: 1.45rem;
-      font-weight: 800;
-      color: #fff;
-    }
-    .header-title p {
-      color: var(--text-muted);
-      font-size: 0.88rem;
-      margin-top: 0.35rem;
-    }
-    .logout-btn {
-      background: #1f293d;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      padding: 0.45rem 0.95rem;
-      border-radius: 0.5rem;
-      text-decoration: none;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-    }
-    .logout-btn:hover {
-      background: #27354f;
-      color: #fff;
-    }
-    .list-wrapper {
+    .header-brand {
       display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .brand-icon {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 0 8px var(--red-glow));
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .header-tag {
+      font-size: 0.75rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
     }
     
-    /* Config Group Container */
-    .group-section {
-      background: rgba(21, 30, 46, 0.6);
-      border: 1px solid var(--border);
-      border-radius: 1.1rem;
-      overflow: hidden;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-    }
-    .group-header {
-      background: rgba(30, 41, 59, 0.7);
-      padding: 0.85rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-    .group-header-info {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .group-tag {
-      background: #3b82f6;
-      color: #fff;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.2rem 0.6rem;
-      border-radius: 0.35rem;
-      font-family: monospace;
-    }
-    .group-name {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #f1f5f9;
-    }
-    .group-count {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      background: #0f172a;
-      padding: 0.2rem 0.55rem;
-      border-radius: 0.35rem;
-      border: 1px solid var(--border);
-    }
-
-    .group-body {
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .sub-profiles-container {
-      margin-right: 1.5rem;
-      padding-right: 1rem;
-      border-right: 2px dashed #2d3d54;
+    /* Clean, flat list of cards without indentation */
+    .links-list {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      position: relative;
     }
-    .sub-profiles-header {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: -0.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .item-card {
+    
+    .link-row {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 0.85rem;
-      padding: 0.95rem 1.25rem;
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1.1rem;
       display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      transition: all 0.2s;
-    }
-    .item-card:hover {
-      background: var(--card-hover);
-      border-color: #334155;
-    }
-    .item-card.is-main {
-      border-color: rgba(59, 130, 246, 0.4);
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, var(--card-bg) 100%);
-    }
-    .item-card.is-enhanced {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, var(--card-bg) 100%);
-    }
-    .item-card.is-chain {
-      border-color: rgba(168, 85, 247, 0.4);
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, var(--card-bg) 100%);
-    }
-    .item-card.is-sub {
-      background: #101726;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .item-card.is-sub:hover {
-      background: #141d2e;
-    }
-    .item-top {
-      display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.6rem;
+      gap: 1rem;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
     }
-    .item-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      flex-wrap: wrap;
+    .link-row:hover {
+      background: var(--card-hover);
+      border-color: rgba(239, 68, 68, 0.45);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
     }
-    .badge {
-      font-size: 0.72rem;
-      padding: 0.22rem 0.55rem;
-      border-radius: 0.35rem;
-      font-weight: 600;
-      direction: ltr;
-      font-family: monospace;
-      background: #1e293b;
-      color: var(--text-muted);
-    }
-    .badge-main {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.35);
-    }
-    .badge-enhanced {
-      background: var(--enhanced-bg);
-      color: var(--enhanced-badge);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-    }
-    .badge-chain {
-      background: var(--chain-bg);
-      color: var(--chain-badge);
-      border: 1px solid rgba(168, 85, 247, 0.35);
-    }
-    .badge-json {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.35);
-    }
-    .badge-tag {
-      background: #1e293b;
-      color: #94a3b8;
-      font-size: 0.68rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: 0.25rem;
-    }
-    .item-desc {
-      font-size: 0.82rem;
-      color: #94a3b8;
-      margin-top: 0.15rem;
-      line-height: 1.4;
-    }
-    .item-tags {
-      display: flex;
-      gap: 0.35rem;
-      flex-wrap: wrap;
-      margin-top: 0.25rem;
-    }
-    .item-name {
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #fff;
-    }
-    .item-middle {
+    
+    .link-meta {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      flex-wrap: wrap;
+      min-width: 0;
     }
-    .url-input {
-      flex: 1;
-      min-width: 250px;
-      background: #0a0e17;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      color: #94a3b8;
-      font-size: 0.8rem;
-      direction: ltr;
-      font-family: monospace;
-      outline: none;
+    .format-pill {
+      font-family: var(--mono-font);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.35rem;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .pill-json {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .pill-txt {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .pill-chain {
+      background: rgba(234, 179, 8, 0.15);
+      color: #fde047;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+    
+    .link-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #f3f4f6;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .url-input:focus {
-      color: #fff;
-      border-color: var(--primary);
-    }
-    .item-buttons {
+
+    .link-actions {
       display: flex;
-      gap: 0.5rem;
+      align-items: center;
+      gap: 0.45rem;
+      flex-shrink: 0;
     }
+
     .btn {
-      padding: 0.45rem 0.85rem;
-      border-radius: 0.5rem;
+      padding: 0.45rem 0.75rem;
+      border-radius: 0.45rem;
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       border: none;
-      text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      transition: all 0.2s;
+      gap: 0.3rem;
+      text-decoration: none;
+      transition: all 0.15s;
     }
-    .btn-primary {
-      background: var(--primary);
+    .btn-red {
+      background: var(--red);
       color: #fff;
     }
-    .btn-primary:hover {
-      background: var(--primary-hover);
+    .btn-red:hover {
+      background: var(--red-hover);
+      box-shadow: 0 0 10px var(--red-glow);
     }
-    .btn-qr {
-      background: #1e293b;
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
       color: #e2e8f0;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
-    .btn-qr:hover {
-      background: #2b394f;
-      color: #fff;
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(239, 68, 68, 0.4);
     }
-    .btn-raw {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-    .btn-raw:hover {
-      background: #1e293b;
-      color: #fff;
-    }
+
     /* Modal for QR Code */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
+      z-index: 100;
       padding: 1rem;
-      z-index: 1000;
     }
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
     .modal-content {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
+      background: #0f141e;
+      border: 1px solid rgba(239, 68, 68, 0.4);
       border-radius: 1rem;
       padding: 1.75rem;
-      max-width: 360px;
       width: 100%;
+      max-width: 340px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      position: relative;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.2);
     }
     .modal-title {
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
     }
     .modal-sub {
       font-size: 0.8rem;
@@ -484,189 +347,122 @@ export function renderDashboard(secret: string, origin: string): string {
     .modal-qr {
       background: #fff;
       padding: 0.85rem;
-      border-radius: 0.75rem;
-      display: inline-flex;
+      border-radius: 0.6rem;
+      display: inline-block;
       margin-bottom: 1.25rem;
     }
-    .close-modal-btn {
+    .close-btn {
       width: 100%;
       padding: 0.65rem;
       background: #1e293b;
       color: #fff;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
+      border: none;
+      border-radius: 0.45rem;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
-    .close-modal-btn:hover {
-      background: #2a3a52;
-    }
+
     .toast {
       position: fixed;
       bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
       background: #10b981;
       color: #fff;
-      padding: 0.6rem 1.25rem;
-      border-radius: 2rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 0.5rem;
       font-size: 0.85rem;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      font-weight: 600;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
       opacity: 0;
+      transform: translateY(15px);
+      transition: all 0.2s;
       pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 2000;
+      z-index: 200;
     }
     .toast.show {
       opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      .link-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+      .link-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="wrapper">
     <header>
-      <div class="header-title">
-        <h1>🚀 پنل سابسکریپشن V2Ray / Xray</h1>
-        <p>فهرست پروفایل‌ها، لینک‌های پالایش‌شده (Enhanced) و نودهای خام جهت آپدیت خودکار کلاینت‌ها</p>
+      <div class="header-brand">
+        <span class="brand-icon">🕊️</span>
+        <div>
+          <h1>درگاه سابسکریپشن</h1>
+        </div>
       </div>
-      <a href="/" class="logout-btn">خروج ✕</a>
+      <span class="header-tag">Anti-Censorship Sub</span>
     </header>
 
-    <div class="list-wrapper">
-      ${(() => {
-        // Group profiles by baseGroup
-        interface GroupData {
-          baseGroup: string;
-          mainProfile?: typeof profileList[0];
-          enhancedProfile?: typeof profileList[0];
-          chainProfile?: typeof profileList[0];
-          otherProfiles: typeof profileList;
-        }
+    <div class="links-list">
+      ${profileList.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:3rem;">هیچ فایلی در پوشه profiles یافت نشد.</div>' : ''}
+      ${profileList
+        .map((p) => {
+          const isJson = p.format === 'json';
+          const isChain = p.isChain;
+          let targetUrl = '';
 
-        const groupsMap = new Map<string, GroupData>();
-
-        for (const p of profileList) {
-          const groupKey = p.baseGroup || p.id.replace(/\.(enhanced|chain)$/, '');
-          if (!groupsMap.has(groupKey)) {
-            groupsMap.set(groupKey, {
-              baseGroup: groupKey,
-              otherProfiles: [],
-            });
-          }
-          const group = groupsMap.get(groupKey)!;
-
-          if (p.isEnhanced) {
-            group.enhancedProfile = p;
-          } else if (p.isChain) {
-            group.chainProfile = p;
-          } else if (p.id === groupKey) {
-            group.mainProfile = p;
+          if (isJson) {
+            targetUrl = `${origin}/${secret}?file=${encodeURIComponent(p.id)}`;
           } else {
-            group.otherProfiles.push(p);
-          }
-        }
-
-        const renderCard = (p: typeof profileList[0], role: 'main' | 'enhanced' | 'chain' | 'json' | 'other', isSub = false) => {
-          const subUrl = `${origin}/${secret}/sub?file=${encodeURIComponent(p.id)}`;
-          const rawUrl = `${origin}/${secret}/raw?file=${encodeURIComponent(p.id)}`;
-          const isFullJson = p.format === 'json';
-          const targetUrl = isFullJson ? `${origin}/${secret}/sub?file=${encodeURIComponent(p.id)}` : subUrl;
-          
-          let cardTypeClass = 'is-main';
-          let badgeTypeClass = 'badge-main';
-          let roleTag = '📦 نسخه اصلی';
-
-          if (isFullJson) {
-            badgeTypeClass = 'badge-json';
-            roleTag = p.client ? `📄 کانفیگ کامل ${p.client}` : '📄 کانفیگ کامل JSON';
-          } else if (role === 'enhanced') {
-            cardTypeClass = 'is-enhanced';
-            badgeTypeClass = 'badge-enhanced';
-            roleTag = '⚡ پایش‌شده (Enhanced)';
-          } else if (role === 'chain') {
-            cardTypeClass = 'is-chain';
-            badgeTypeClass = 'badge-chain';
-            roleTag = '🔗 چِین پروکسی (Chain)';
+            targetUrl = `${origin}/${secret}?file=${encodeURIComponent(p.id)}`;
           }
 
-          const cardClass = `item-card ${cardTypeClass}${isSub ? ' is-sub' : ''}`;
-          const tagsHtml = (p.tags || []).map((t) => `<span class="badge-tag">#${t}</span>`).join('');
+          let badgeClass = 'pill-txt';
+          let badgeText = 'TXT';
+          if (isJson) {
+            badgeClass = 'pill-json';
+            badgeText = 'SING-BOX / JSON';
+          } else if (isChain) {
+            badgeClass = 'pill-chain';
+            badgeText = 'CHAIN';
+          }
 
           return `
-            <div class="${cardClass}">
-              <div class="item-top">
-                <div class="item-title-wrap">
-                  <span class="badge ${badgeTypeClass}">${roleTag}</span>
-                  <span class="item-name">${p.name || p.filename}</span>
-                </div>
-                <div class="item-buttons">
-                  <button class="btn btn-primary" onclick="copyUrl('${targetUrl}')">📋 کپی لینک</button>
-                  <button class="btn btn-qr" onclick="openQrModal('${p.name}', '${targetUrl}')">📱 بارکد QR</button>
-                  <a href="${targetUrl}" target="_blank" class="btn btn-raw">${isFullJson ? '👁️ مشاهده JSON' : '👁️ نودها'}</a>
-                </div>
+            <div class="link-row">
+              <div class="link-meta">
+                <span class="format-pill ${badgeClass}">${badgeText}</span>
+                <span class="link-name">${p.name || p.filename}</span>
               </div>
-              ${p.description ? `<div class="item-desc">${p.description}</div>` : ''}
-              ${tagsHtml ? `<div class="item-tags">${tagsHtml}</div>` : ''}
-              <div class="item-middle">
-                <input type="text" readonly class="url-input" value="${targetUrl}" onclick="this.select()">
+              <div class="link-actions">
+                <button class="btn btn-red" onclick="copyUrl('${targetUrl}')">📋 کپی لینک</button>
+                <button class="btn btn-outline" onclick="openQrModal('${p.name || p.filename}', '${targetUrl}')">📱 QR</button>
+                <a href="${targetUrl}" target="_blank" class="btn btn-outline">${isJson ? '👁️ مشاهده' : '👁️ نودها'}</a>
               </div>
             </div>
           `;
-        };
-
-        return Array.from(groupsMap.values())
-          .map((group) => {
-            const hasSub = !!(group.enhancedProfile || group.chainProfile || group.otherProfiles.length > 0);
-            const totalInGroup = (group.mainProfile ? 1 : 0) + 
-              (group.enhancedProfile ? 1 : 0) + 
-              (group.chainProfile ? 1 : 0) + 
-              group.otherProfiles.length;
-
-            return `
-            <div class="group-section">
-              <div class="group-header">
-                <div class="group-header-info">
-                  <span class="group-tag">CONFIG</span>
-                  <span class="group-name">کانفیگ پایه: ${group.baseGroup}</span>
-                </div>
-                <span class="group-count">${totalInGroup} پروفایل در دسترس</span>
-              </div>
-              
-              <div class="group-body">
-                ${group.mainProfile ? renderCard(group.mainProfile, 'main', false) : ''}
-                
-                ${hasSub ? `
-                  <div class="sub-profiles-container">
-                    <div class="sub-profiles-header">
-                      <span>↳ پروفایل‌های پالایش‌شده و ویژه (زیرمجموعه ${group.baseGroup}):</span>
-                    </div>
-                    ${group.enhancedProfile ? renderCard(group.enhancedProfile, 'enhanced', true) : ''}
-                    ${group.chainProfile ? renderCard(group.chainProfile, 'chain', true) : ''}
-                    ${group.otherProfiles.map((p) => renderCard(p, 'other', true)).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-            `;
-          })
-          .join('');
-      })()}
+        })
+        .join('')}
     </div>
   </div>
 
-  <!-- QR Code Modal -->
+  <!-- QR Modal -->
   <div id="qrModal" class="modal-overlay" onclick="closeQrModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
       <h3 id="modalTitle" class="modal-title"></h3>
-      <p class="modal-sub">این QR کد را با دوربین نرم‌افزار V2Ray خود اسکن کنید</p>
+      <p class="modal-sub">اسکن جهت ایمپورت مستقیم در نرم‌افزار</p>
       <div class="modal-qr">
         <div id="modalQrCode"></div>
       </div>
-      <button class="close-modal-btn" onclick="closeQrModal()">بستن پنجره</button>
+      <button class="close-btn" onclick="closeQrModal()">بستن</button>
     </div>
   </div>
 
-  <div id="toast" class="toast">لینک سابسکریپشن با موفقیت کپی شد! ✅</div>
+  <div id="toast" class="toast">لینک کپی شد! ✅</div>
 
   <script>
     let qrInstance = null;
@@ -678,8 +474,8 @@ export function renderDashboard(secret: string, origin: string): string {
       
       qrInstance = new QRCode(qrContainer, {
         text: url,
-        width: 200,
-        height: 200,
+        width: 190,
+        height: 190,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
@@ -700,7 +496,6 @@ export function renderDashboard(secret: string, origin: string): string {
       });
     }
 
-    // Close modal on Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeQrModal();
     });

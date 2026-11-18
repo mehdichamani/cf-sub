@@ -42,139 +42,15 @@ check_credentials() {
   return 0
 }
 
-select_profile_file() {
-  local files=()
-  for f in profiles/*.txt; do
-    [ -e "$f" ] || continue
-    local fname
-    fname="$(basename "$f")"
-    if [[ "$fname" != *".enhanced.txt"* && "$fname" != *".chain.txt"* ]]; then
-      files+=("$fname")
-    fi
-  done
-
-  if [ ${#files[@]} -eq 0 ]; then
-    echo -e "${YELLOW}⚠️ No source .txt files found in profiles/ directory.${NC}"
-    SELECTED_FILE=""
-    return 1
-  fi
-
-  if command -v gum >/dev/null 2>&1; then
-    echo -e "${CYAN}Select file to test:${NC}"
-    local selection
-    selection=$(gum choose "All files (Run on all profiles)" "${files[@]}" "Cancel")
-    if [ "$selection" = "Cancel" ] || [ -z "$selection" ]; then
-      SELECTED_FILE="__CANCEL__"
-      return 1
-    elif [ "$selection" = "All files (Run on all profiles)" ]; then
-      SELECTED_FILE=""
-      return 0
-    else
-      SELECTED_FILE="$selection"
-      return 0
-    fi
-  else
-    echo -e "\n${CYAN}Select file to test:${NC}"
-    echo "0) All files (Run on all profiles)"
-    local i=1
-    for f in "${files[@]}"; do
-      echo "$i) $f"
-      ((i++))
-    done
-    echo "c) Cancel"
-    echo -n "Select option [0-$((i-1)) / c]: "
-    read -r opt
-    if [ "$opt" = "c" ] || [ "$opt" = "C" ]; then
-      SELECTED_FILE="__CANCEL__"
-      return 1
-    elif [ "$opt" = "0" ] || [ -z "$opt" ]; then
-      SELECTED_FILE=""
-      return 0
-    elif [[ "$opt" =~ ^[0-9]+$ ]] && [ "$opt" -ge 1 ] && [ "$opt" -le "${#files[@]}" ]; then
-      SELECTED_FILE="${files[$((opt-1))]}"
-      return 0
-    else
-      echo -e "${RED}Invalid selection!${NC}"
-      SELECTED_FILE="__CANCEL__"
-      return 1
-    fi
-  fi
-}
-
-# 1. Direct Node Test
-do_test() {
-  local target_file="$1"
-  if [ -z "$target_file" ]; then
-    select_profile_file || {
-      [ "$SELECTED_FILE" = "__CANCEL__" ] && return 0
-      return 1
-    }
-    target_file="$SELECTED_FILE"
-  fi
-
+# 1. Local Web GUI for Testing & Cleaning
+do_gui() {
   echo -e "\n${BLUE}=======================================${NC}"
-  if [ -n "$target_file" ]; then
-    echo -e "${CYAN}🔄 Running direct node test for: ${BOLD}${target_file}${NC}..."
-  else
-    echo -e "${CYAN}🔄 Running direct node test & curation (All Files)...${NC}"
-  fi
+  echo -e "${CYAN}🚀 Launching Xray Local GUI & Tester...${NC}"
   echo -e "${BLUE}=======================================${NC}\n"
-
-  if [ -n "$target_file" ]; then
-    node --experimental-strip-types tools/curator.ts --no-chain --file "$target_file"
-    node --experimental-strip-types tools/generate-profiles.ts
-  else
-    pnpm run curate
-  fi
-  echo -e "\n${GREEN}✔ Direct node test completed successfully.${NC}\n"
+  pnpm run gui
 }
 
-# 2. Chained Node Test
-do_test_chain() {
-  local target_file="$1"
-  if [ -z "$target_file" ]; then
-    select_profile_file || {
-      [ "$SELECTED_FILE" = "__CANCEL__" ] && return 0
-      return 1
-    }
-    target_file="$SELECTED_FILE"
-  fi
-
-  echo -e "\n${BLUE}=======================================${NC}"
-  if [ -n "$target_file" ]; then
-    echo -e "${MAGENTA}🔗 Running chained node test for: ${BOLD}${target_file}${NC}..."
-  else
-    echo -e "${MAGENTA}🔗 Running chained node test & curation (All Files)...${NC}"
-  fi
-  echo -e "${BLUE}=======================================${NC}\n"
-  ensure_env
-  local current_chain
-  current_chain=$(grep -E '^CHAIN_PROXY=' "$ENV_FILE" | head -n 1 | cut -d '=' -f2- | tr -d '"' | tr -d "'")
-  if [ -z "$current_chain" ]; then
-    current_chain="socks5://127.0.0.1:10808"
-    echo "CHAIN_PROXY=\"$current_chain\"" >> "$ENV_FILE"
-  fi
-  echo -e "${YELLOW}Landing Proxy: ${BOLD}${current_chain}${NC}\n"
-
-  if [ -n "$target_file" ]; then
-    node --experimental-strip-types tools/curator.ts --chain --file "$target_file"
-    node --experimental-strip-types tools/generate-profiles.ts
-  else
-    pnpm run curate:chain
-  fi
-  echo -e "\n${GREEN}✔ Chained node test completed successfully.${NC}\n"
-}
-
-# 3. Local Dev
-do_dev() {
-  echo -e "\n${BLUE}=======================================${NC}"
-  echo -e "${CYAN}💻 Starting local Cloudflare Worker development server (wrangler dev)...${NC}"
-  echo -e "${BLUE}=======================================${NC}\n"
-  ensure_env
-  pnpm exec wrangler dev --env-file "$ENV_FILE"
-}
-
-# 4. Cloudflare Deploy
+# 2. Cloudflare Deploy
 do_deploy() {
   echo -e "\n${BLUE}=======================================${NC}"
   echo -e "${CYAN}☁️ Deploying to Cloudflare Workers...${NC}"
@@ -184,7 +60,7 @@ do_deploy() {
   echo -e "\n${GREEN}✔ Deployment successful!${NC}\n"
 }
 
-# 5. Set Cloudflare Secret
+# 3. Set Cloudflare Secret
 do_secret() {
   echo -e "\n${BLUE}=======================================${NC}"
   echo -e "${CYAN}🔑 Setting secret (SUB_SECRET) on Cloudflare Workers...${NC}"
@@ -226,7 +102,7 @@ do_secret() {
   echo -e "\n${GREEN}✔ Secret SUB_SECRET saved to Cloudflare and synced with .env.${NC}\n"
 }
 
-# 6. Check Identity / Whoami
+# 4. Check Identity / Whoami
 do_whoami() {
   echo -e "\n${BLUE}=======================================${NC}"
   echo -e "${CYAN}👤 Checking Cloudflare authentication status...${NC}"
@@ -240,22 +116,18 @@ menu_gum() {
     echo -e "\n${BOLD}${CYAN}🚀 cf-sub Management Menu${NC}"
     local choice
     choice=$(gum choose \
-      "1. Test nodes directly (Direct Test)" \
-      "2. Test nodes via landing proxy (Chain Test)" \
-      "3. Local dev server (wrangler dev)" \
-      "4. Deploy to Cloudflare (wrangler deploy)" \
-      "5. Set Cloudflare secret (wrangler secret put)" \
-      "6. Check Cloudflare account (wrangler whoami)" \
-      "7. Exit")
+      "1. Local Web GUI (Test with Xray & Clean Configs)" \
+      "2. Deploy to Cloudflare (wrangler deploy)" \
+      "3. Set Cloudflare secret (wrangler secret put)" \
+      "4. Check Cloudflare account (wrangler whoami)" \
+      "5. Exit")
 
     case "$choice" in
-      *"1."*) do_test ;;
-      *"2."*) do_test_chain ;;
-      *"3."*) do_dev ;;
-      *"4."*) do_deploy ;;
-      *"5."*) do_secret ;;
-      *"6."*) do_whoami ;;
-      *"7."*|"") exit 0 ;;
+      *"1."*) do_gui ;;
+      *"2."*) do_deploy ;;
+      *"3."*) do_secret ;;
+      *"4."*) do_whoami ;;
+      *"5."*|"") exit 0 ;;
     esac
   done
 }
@@ -263,22 +135,18 @@ menu_gum() {
 menu_fallback() {
   while true; do
     echo -e "\n${BOLD}${CYAN}================ cf-sub Launcher ================${NC}"
-    echo -e "1) Direct node test (${YELLOW}pnpm run curate${NC})"
-    echo -e "2) Chained node test with landing proxy (${MAGENTA}pnpm run curate:chain${NC})"
-    echo -e "3) Local dev (${YELLOW}wrangler dev${NC})"
-    echo -e "4) Deploy to Cloudflare (${YELLOW}wrangler deploy${NC})"
-    echo -e "5) Set Cloudflare secret (${YELLOW}wrangler secret put${NC})"
-    echo -e "6) Check Cloudflare connection (${YELLOW}whoami${NC})"
+    echo -e "1) Open Local Web GUI (${YELLOW}pnpm run gui${NC})"
+    echo -e "2) Deploy to Cloudflare (${YELLOW}wrangler deploy${NC})"
+    echo -e "3) Set Cloudflare secret (${YELLOW}wrangler secret put${NC})"
+    echo -e "4) Check Cloudflare connection (${YELLOW}whoami${NC})"
     echo -e "q) Exit"
-    echo -n "Select an option [1-6 / q]: "
+    echo -n "Select an option [1-4 / q]: "
     read -r choice
     case "$choice" in
-      1) do_test ;;
-      2) do_test_chain ;;
-      3) do_dev ;;
-      4) do_deploy ;;
-      5) do_secret ;;
-      6) do_whoami ;;
+      1) do_gui ;;
+      2) do_deploy ;;
+      3) do_secret ;;
+      4) do_whoami ;;
       q|Q) exit 0 ;;
       *) echo -e "${RED}Invalid option!${NC}" ;;
     esac
@@ -287,14 +155,8 @@ menu_fallback() {
 
 # Direct CLI arguments support
 case "$1" in
-  test|curate)
-    do_test "$2"
-    ;;
-  test:chain|chain|curate:chain)
-    do_test_chain "$2"
-    ;;
-  dev|local)
-    do_dev
+  gui|web)
+    do_gui
     ;;
   deploy)
     do_deploy
@@ -313,7 +175,7 @@ case "$1" in
     fi
     ;;
   *)
-    echo "Usage: $0 [test|chain|dev|deploy|secret|whoami]"
+    echo "Usage: $0 [gui|deploy|secret|whoami]"
     exit 1
     ;;
 esac

@@ -9,6 +9,7 @@
     "predeploy": "node --experimental-strip-types tools/generate-profiles.ts",
     "pretypecheck": "node --experimental-strip-types tools/generate-profiles.ts",
     "generate-profiles": "node --experimental-strip-types tools/generate-profiles.ts",
+    "gui": "node --experimental-strip-types tools/gui-server.ts",
     "dev": "wrangler dev --env-file .env",
     "deploy": "wrangler deploy --env-file .env",
     "secret:put": "wrangler secret put SUB_SECRET --env-file .env",
@@ -16,9 +17,7 @@
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types",
     "curate": "node --experimental-strip-types tools/curator.ts --no-chain && node --experimental-strip-types tools/generate-profiles.ts",
-    "curate:chain": "node --experimental-strip-types tools/curator.ts --chain && node --experimental-strip-types tools/generate-profiles.ts",
-    "test-nodes": "node --experimental-strip-types tools/curator.ts --no-chain && node --experimental-strip-types tools/generate-profiles.ts",
-    "test-nodes:chain": "node --experimental-strip-types tools/curator.ts --chain && node --experimental-strip-types tools/generate-profiles.ts"
+    "curate:chain": "node --experimental-strip-types tools/curator.ts --chain && node --experimental-strip-types tools/generate-profiles.ts"
   },
   "keywords": [
     "cloudflare-worker",
