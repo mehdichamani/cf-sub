@@ -419,7 +419,7 @@ export function renderDashboard(secret: string, origin: string): string {
           if (isJson) {
             targetUrl = `${origin}/${secret}?file=${encodeURIComponent(p.id)}`;
           } else {
-            targetUrl = `${origin}/${secret}?file=${encodeURIComponent(p.id)}`;
+            targetUrl = `${origin}/${secret}/sub?file=${encodeURIComponent(p.id)}`;
           }
 
           let badgeClass = 'pill-txt';

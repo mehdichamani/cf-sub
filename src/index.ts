@@ -123,16 +123,13 @@ export default {
       url.pathname = subPath || '/';
     }
 
-    // If client requested the dashboard via path /<SECRET> or /<SECRET>/
-    if (url.pathname === '/' || url.pathname === '') {
+    // If client requested the dashboard via path /<SECRET> or /<SECRET>/ (without ?file or other query params)
+    const targetProfile = url.searchParams.get('file') || url.searchParams.get('profile') || undefined;
+    if ((url.pathname === '/' || url.pathname === '') && !targetProfile) {
       return new Response(renderDashboard(configuredSecret, url.origin), {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
     }
-
-    // Determine target profile (default or specific file from profiles/)
-    // Can be specified via query param ?file=config1 or ?profile=config1
-    const targetProfile = url.searchParams.get('file') || url.searchParams.get('profile') || undefined;
 
     // Direct JSON Profile Serving (e.g. Sing-box or Xray full configs)
     if (targetProfile && PROFILES[targetProfile] && PROFILES[targetProfile].format === 'json') {
