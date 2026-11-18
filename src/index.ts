@@ -134,6 +134,19 @@ export default {
     // Can be specified via query param ?file=config1 or ?profile=config1
     const targetProfile = url.searchParams.get('file') || url.searchParams.get('profile') || undefined;
 
+    // Direct JSON Profile Serving (e.g. Sing-box or Xray full configs)
+    if (targetProfile && PROFILES[targetProfile] && PROFILES[targetProfile].format === 'json') {
+      const p = PROFILES[targetProfile];
+      return new Response(p.content, {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Disposition': `inline; filename="${p.filename}"`,
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
     const filterOptions: FilterOptions = {
       protocol: url.searchParams.get('proto') || url.searchParams.get('type') || undefined,
       remark: url.searchParams.get('remark') || url.searchParams.get('search') || undefined,

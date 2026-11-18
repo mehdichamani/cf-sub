@@ -1,16 +1,40 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import YAML from 'yaml';
+
+interface ProfileMetadata {
+  name?: string;
+  description?: string;
+  author?: string;
+  client?: string;
+  tags?: string[];
+  [key: string]: any;
+}
 
 const profilesDir = path.resolve(process.cwd(), 'profiles');
 const outputFile = path.resolve(process.cwd(), 'src/generated-profiles.ts');
+const metaFile = path.resolve(process.cwd(), 'profiles.yaml');
 
 if (!fs.existsSync(profilesDir)) {
   fs.mkdirSync(profilesDir, { recursive: true });
 }
 
+// Load descriptions and metadata from profiles.yaml if present
+let profilesMeta: Record<string, ProfileMetadata> = {};
+if (fs.existsSync(metaFile)) {
+  try {
+    const parsed = YAML.parse(fs.readFileSync(metaFile, 'utf-8'));
+    if (parsed && typeof parsed === 'object') {
+      profilesMeta = parsed.profiles || parsed;
+    }
+  } catch (err: any) {
+    console.warn(`⚠️ Warning: Could not parse profiles.yaml: ${err.message}`);
+  }
+}
+
 const files = fs
   .readdirSync(profilesDir)
-  .filter((f) => f.endsWith('.txt'))
+  .filter((f) => f.endsWith('.txt') || f.endsWith('.json'))
   .sort((a, b) => {
     // Put enhanced files first, then alphabetical
     const aEnh = a.includes('.enhanced.');
@@ -25,41 +49,64 @@ let entriesCode = '';
 
 files.forEach((file, idx) => {
   const varName = `profileContent_${idx}`;
-  const id = file.replace(/\.txt$/, '');
-  const isEnhanced = file.endsWith('.enhanced.txt');
-  const isChain = file.endsWith('.chain.txt');
-  
-  let baseGroup = file.replace(/\.txt$/, '');
+  const isJson = file.endsWith('.json');
+  const ext = isJson ? '.json' : '.txt';
+  const id = file.slice(0, -ext.length);
+  const isEnhanced = file.includes('.enhanced.');
+  const isChain = file.includes('.chain.');
+
+  let baseGroup = id;
   if (isChain) {
-    baseGroup = file.replace(/\.chain\.txt$/, '');
+    baseGroup = id.replace(/\.chain$/, '');
   } else if (isEnhanced) {
-    baseGroup = file.replace(/\.enhanced\.txt$/, '');
+    baseGroup = id.replace(/\.enhanced$/, '');
   }
-  
-  // Format a friendly display name
-  let displayName = file;
-  if (isChain) {
-    displayName = `${baseGroup} (🔗 Chained Proxy)`;
-  } else if (isEnhanced) {
-    displayName = `${baseGroup} (⚡ Enhanced & Fast)`;
+
+  // Get user-provided metadata from profiles.yaml
+  const meta: ProfileMetadata = profilesMeta[id] || profilesMeta[baseGroup] || {};
+
+  // Determine display name
+  let displayName = meta.name;
+  if (!displayName) {
+    if (isChain) {
+      displayName = `${baseGroup} (🔗 Chained Proxy)`;
+    } else if (isEnhanced) {
+      displayName = `${baseGroup} (⚡ Enhanced & Fast)`;
+    } else if (isJson) {
+      displayName = `${baseGroup} (📄 Full Config JSON)`;
+    } else {
+      displayName = `${baseGroup} (اصل / کامل)`;
+    }
   } else {
-    displayName = `${baseGroup} (اصل / کامل)`;
+    // If name is configured in metadata but this is an enhanced/chain variation
+    if (isEnhanced && !displayName.includes('Enhanced') && !displayName.includes('⚡')) {
+      displayName += ' ⚡ (Enhanced)';
+    } else if (isChain && !displayName.includes('Chain') && !displayName.includes('🔗')) {
+      displayName += ' 🔗 (Chain)';
+    }
   }
 
   importsCode += `import ${varName} from '../profiles/${file}';\n`;
-  entriesCode += `  ${JSON.stringify(id)}: {\n` +
+  const contentExpr = isJson ? `typeof ${varName} === 'string' ? ${varName} : JSON.stringify(${varName}, null, 2)` : varName;
+  entriesCode +=
+    `  ${JSON.stringify(id)}: {\n` +
     `    id: ${JSON.stringify(id)},\n` +
     `    name: ${JSON.stringify(displayName)},\n` +
     `    filename: ${JSON.stringify(file)},\n` +
-    `    content: ${varName},\n` +
+    `    format: ${JSON.stringify(isJson ? 'json' : 'txt')},\n` +
+    `    content: ${contentExpr},\n` +
     `    isEnhanced: ${isEnhanced},\n` +
     `    isChain: ${isChain},\n` +
     `    baseGroup: ${JSON.stringify(baseGroup)},\n` +
+    `    description: ${JSON.stringify(meta.description || '')},\n` +
+    `    author: ${JSON.stringify(meta.author || '')},\n` +
+    `    client: ${JSON.stringify(meta.client || '')},\n` +
+    `    tags: ${JSON.stringify(meta.tags || [])},\n` +
     `  },\n`;
 });
 
 const generatedContent = `// AUTO-GENERATED FILE. DO NOT EDIT DIRECTLY.
-// Generated dynamically by scanning profiles/ folder during build/dev.
+// Generated dynamically by scanning profiles/ folder and profiles.yaml during build/dev.
 
 ${importsCode}
 import { ProfileInfo } from './types';

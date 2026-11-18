@@ -92,9 +92,9 @@ export async function getNodesForProfile(
       }
     }
   } else {
-    // If no specific profile is requested, load all non-enhanced profiles (or all available)
+    // If no specific profile is requested, load all non-enhanced and text-based profiles
     for (const [id, profile] of Object.entries(PROFILES)) {
-      if (id.includes('.enhanced')) continue; // Skip enhanced in collective view to avoid duplicate nodes
+      if (id.includes('.enhanced') || profile.format === 'json') continue; // Skip enhanced and JSON full configs in collective URI view
       for (const node of parseNodesFromText(profile.content, profile.filename)) {
         if (!seenRaw.has(node.raw)) {
           seenRaw.add(node.raw);

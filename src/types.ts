@@ -10,14 +10,30 @@ export interface Env {
   };
 }
 
+export type ProfileFormat = 'txt' | 'json';
+
+export interface ProfileMetadata {
+  name?: string;
+  description?: string;
+  author?: string;
+  client?: string;
+  tags?: string[];
+  [key: string]: any;
+}
+
 export interface ProfileInfo {
   id: string;
   name: string;
   filename: string;
+  format: ProfileFormat;
   content: string;
   isEnhanced: boolean;
   isChain?: boolean;
   baseGroup?: string;
+  description?: string;
+  author?: string;
+  client?: string;
+  tags?: string[];
 }
 
 export interface NodeItem {

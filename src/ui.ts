@@ -346,6 +346,30 @@ export function renderDashboard(secret: string, origin: string): string {
       color: var(--chain-badge);
       border: 1px solid rgba(168, 85, 247, 0.35);
     }
+    .badge-json {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .badge-tag {
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 0.68rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 0.25rem;
+    }
+    .item-desc {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-top: 0.15rem;
+      line-height: 1.4;
+    }
+    .item-tags {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
     .item-name {
       font-size: 0.98rem;
       font-weight: 600;
@@ -542,15 +566,20 @@ export function renderDashboard(secret: string, origin: string): string {
           }
         }
 
-        const renderCard = (p: typeof profileList[0], role: 'main' | 'enhanced' | 'chain' | 'other', isSub = false) => {
+        const renderCard = (p: typeof profileList[0], role: 'main' | 'enhanced' | 'chain' | 'json' | 'other', isSub = false) => {
           const subUrl = `${origin}/${secret}/sub?file=${encodeURIComponent(p.id)}`;
           const rawUrl = `${origin}/${secret}/raw?file=${encodeURIComponent(p.id)}`;
+          const isFullJson = p.format === 'json';
+          const targetUrl = isFullJson ? `${origin}/${secret}/sub?file=${encodeURIComponent(p.id)}` : subUrl;
           
           let cardTypeClass = 'is-main';
           let badgeTypeClass = 'badge-main';
           let roleTag = '📦 نسخه اصلی';
 
-          if (role === 'enhanced') {
+          if (isFullJson) {
+            badgeTypeClass = 'badge-json';
+            roleTag = p.client ? `📄 کانفیگ کامل ${p.client}` : '📄 کانفیگ کامل JSON';
+          } else if (role === 'enhanced') {
             cardTypeClass = 'is-enhanced';
             badgeTypeClass = 'badge-enhanced';
             roleTag = '⚡ پایش‌شده (Enhanced)';
@@ -561,22 +590,25 @@ export function renderDashboard(secret: string, origin: string): string {
           }
 
           const cardClass = `item-card ${cardTypeClass}${isSub ? ' is-sub' : ''}`;
+          const tagsHtml = (p.tags || []).map((t) => `<span class="badge-tag">#${t}</span>`).join('');
 
           return `
             <div class="${cardClass}">
               <div class="item-top">
                 <div class="item-title-wrap">
                   <span class="badge ${badgeTypeClass}">${roleTag}</span>
-                  <span class="item-name">${p.filename}</span>
+                  <span class="item-name">${p.name || p.filename}</span>
                 </div>
                 <div class="item-buttons">
-                  <button class="btn btn-primary" onclick="copyUrl('${subUrl}')">📋 کپی لینک</button>
-                  <button class="btn btn-qr" onclick="openQrModal('${p.name}', '${subUrl}')">📱 بارکد QR</button>
-                  <a href="${rawUrl}" target="_blank" class="btn btn-raw">👁️ نودها</a>
+                  <button class="btn btn-primary" onclick="copyUrl('${targetUrl}')">📋 کپی لینک</button>
+                  <button class="btn btn-qr" onclick="openQrModal('${p.name}', '${targetUrl}')">📱 بارکد QR</button>
+                  <a href="${targetUrl}" target="_blank" class="btn btn-raw">${isFullJson ? '👁️ مشاهده JSON' : '👁️ نودها'}</a>
                 </div>
               </div>
+              ${p.description ? `<div class="item-desc">${p.description}</div>` : ''}
+              ${tagsHtml ? `<div class="item-tags">${tagsHtml}</div>` : ''}
               <div class="item-middle">
-                <input type="text" readonly class="url-input" value="${subUrl}" onclick="this.select()">
+                <input type="text" readonly class="url-input" value="${targetUrl}" onclick="this.select()">
               </div>
             </div>
           `;

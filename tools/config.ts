@@ -5,6 +5,7 @@ import { execSync } from 'node:child_process';
 
 export interface TesterConfig {
   xrayPath: string;
+  singboxPath?: string;
   testUrl: string;
   timeoutMs: number;
   concurrency: number;
@@ -41,6 +42,38 @@ function readEnvFile(filePath: string): Record<string, string> {
 /**
  * Known default locations where Xray might be installed on various systems
  */
+const KNOWN_SINGBOX_PATHS = [
+  path.join(os.homedir(), '.local/share/PattN/bin/sing_box/sing-box'),
+  path.join(os.homedir(), '.local/share/PattN/bin/sing-box'),
+  '/usr/local/bin/sing-box',
+  '/usr/bin/sing-box',
+  path.join(os.homedir(), '.local/bin/sing-box'),
+];
+
+export function resolveSingboxPath(customPath?: string): string | undefined {
+  if (customPath && fs.existsSync(customPath)) return customPath;
+  const envPath = process.env.SINGBOX_PATH?.trim();
+  if (envPath && fs.existsSync(envPath)) return envPath;
+
+  const configFile = path.resolve(process.cwd(), 'tools/config.json');
+  if (fs.existsSync(configFile)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
+      if (cfg.singboxPath && fs.existsSync(cfg.singboxPath)) return cfg.singboxPath;
+    } catch {}
+  }
+
+  try {
+    const whichResult = execSync('which sing-box 2>/dev/null', { encoding: 'utf-8' }).trim();
+    if (whichResult && fs.existsSync(whichResult)) return whichResult;
+  } catch {}
+
+  for (const candidate of KNOWN_SINGBOX_PATHS) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return undefined;
+}
+
 const KNOWN_XRAY_PATHS = [
   path.join(os.homedir(), '.local/share/PattN/bin/xray/xray'),
   '/usr/local/bin/xray',
@@ -143,9 +176,11 @@ export function loadTesterConfig(args: string[]): TesterConfig {
   }
 
   const xrayPath = resolveXrayPath(customXrayPath);
+  const singboxPath = resolveSingboxPath();
 
   return {
     xrayPath,
+    singboxPath,
     testUrl,
     timeoutMs,
     concurrency,

@@ -1,0 +1,46 @@
+# تنظیمات و توضیحات پروفایل‌ها و کانفیگ‌ها
+# این فایل به صورت خودکار یا دستی برای تعریف عنوان، توضیحات و ترتیب نمایش هر پروفایل خوانده می‌شود.
+
+profiles:
+  durable:
+    name: "Durable Servers"
+    description: "سرورهای با پایداری و دوام بالا برای استفاده روزمره"
+    author: "mehdiunreal"
+    tags: ["stable", "daily", "vless", "trojan"]
+
+  SS:
+    name: "Shadowsocks Direct"
+    description: "پروکسی‌های شادوساکس مستقیم"
+    tags: ["ss", "fast"]
+
+  SS.chain:
+    name: "Shadowsocks Chained"
+    description: "پروکسی‌های شادوساکس با اتصال از طریق تونل Landing Proxy"
+    tags: ["ss", "chain"]
+
+  SS2.chain:
+    name: "Shadowsocks 2 Chained"
+    description: "مجموعه دوم سرورهای شادوساکس زنجیره‌ای (Chained)"
+    tags: ["ss", "chain"]
+
+  TCB-Steveargon3:
+    name: "Steveargon3 Multi-CDN"
+    description: "کانفیگ‌های ترکیبی با پشتیبانی ECH و TLS"
+    tags: ["ech", "cloudflare", "multi-cdn"]
+
+  TCB_mehdiunreal_raw:
+    name: "TCB Raw Nodes"
+    description: "نودهای خام استخراج شده از کلاینت‌های TCB"
+    tags: ["raw", "vless"]
+
+  TCB_mehdiunreal_Singbox:
+    name: "Sing-box Full Config (TCB)"
+    description: "کانفیگ کامل رسمی Sing-box با قوانین DNS، FakeIP و گروه Best Ping"
+    client: "sing-box"
+    tags: ["sing-box", "full-client-config", "tun", "dns-rules"]
+
+  TCB_mehdiunreal_Xray:
+    name: "Xray Core Full Config (TCB)"
+    description: "کانفیگ کامل اختصاصی Xray با فرگمنت TLS و قوانین روتینگ هوشمند"
+    client: "xray"
+    tags: ["xray", "full-client-config", "fragment", "routing"]

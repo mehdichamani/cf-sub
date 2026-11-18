@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadTesterConfig } from './config.ts';
-import { curateNodes, type TestResult } from './tester.ts';
+import { curateNodes, curateXrayJson, curateSingboxJson, type TestResult } from './tester.ts';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -15,7 +15,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Find target file (e.g., config1.txt or all files, excluding already curated/enhanced files)
+  // Find target file(s)
   let targetFiles: string[] = [];
   const fileArgIdx = args.indexOf('--file');
   if (fileArgIdx !== -1 && args[fileArgIdx + 1]) {
@@ -23,11 +23,16 @@ async function main() {
   } else {
     targetFiles = fs
       .readdirSync(profilesDir)
-      .filter((f) => f.endsWith('.txt') && !f.includes('.enhanced.txt') && !f.includes('.chain.txt'));
+      .filter(
+        (f) =>
+          (f.endsWith('.txt') || f.endsWith('.json')) &&
+          !f.includes('.enhanced.') &&
+          !f.includes('.chain.')
+      );
   }
 
   console.log('====================================================');
-  console.log('🚀 Local V2Ray / Xray Node Quality & Curation Tool');
+  console.log('🚀 Local Proxy Node Quality & Curation Suite');
   console.log('====================================================');
 
   for (const file of targetFiles) {
@@ -38,6 +43,60 @@ async function main() {
     }
 
     console.log(`\n📂 Processing: ${file}`);
+    const isJson = file.endsWith('.json');
+
+    if (isJson) {
+      // JSON config file (Sing-box or Xray)
+      try {
+        const jsonContent = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        const hasXrayOutbound = jsonContent.outbounds && jsonContent.outbounds.some((o: any) => o.protocol);
+        const hasSingboxOutbound = jsonContent.outbounds && jsonContent.outbounds.some((o: any) => o.type);
+        const isXray = hasXrayOutbound || (!!jsonContent.routing && !hasSingboxOutbound);
+        const isSingbox = !isXray && (hasSingboxOutbound || !!jsonContent.experimental);
+
+        let results: TestResult[] = [];
+        let enhancedConfig: any = null;
+
+        if (isSingbox) {
+          console.log(`🔎 Detected format: Sing-box JSON Config`);
+          const res = await curateSingboxJson(jsonContent, config);
+          results = res.results;
+          enhancedConfig = res.enhancedConfig;
+        } else if (isXray) {
+          console.log(`🔎 Detected format: Xray JSON Config`);
+          const res = await curateXrayJson(jsonContent, config);
+          results = res.results;
+          enhancedConfig = res.enhancedConfig;
+        } else {
+          console.warn(`⚠️ Unknown JSON structure in ${file}, skipping curation.`);
+          continue;
+        }
+
+        console.log('\n');
+        const alive = results.filter((r) => r.alive).sort((a, b) => a.latencyMs - b.latencyMs);
+        const dead = results.filter((r) => !r.alive);
+
+        console.log(`\n📊 Summary for ${file}:`);
+        console.log(`  - Total proxy outbounds: ${results.length}`);
+        console.log(`  - Alive & Fast:          ${alive.length} ✅`);
+        console.log(`  - Dead / Timeout:        ${dead.length} ❌`);
+
+        if (alive.length > 0) {
+          const baseName = file.replace(/\.enhanced\.json$/, '').replace(/\.json$/, '');
+          const outputFileName = `${baseName}.enhanced.json`;
+          const outputPath = path.join(profilesDir, outputFileName);
+          fs.writeFileSync(outputPath, JSON.stringify(enhancedConfig, null, 2), 'utf-8');
+          console.log(`\n💾 Saved enhanced JSON config to: profiles/${outputFileName}`);
+        } else {
+          console.warn(`⚠️ No alive nodes were found for ${file}.`);
+        }
+      } catch (err: any) {
+        console.error(`❌ Error parsing/curating JSON file ${file}:`, err.message);
+      }
+      continue;
+    }
+
+    // Standard .txt URI node list
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content
       .split(/\r?\n/)
@@ -65,8 +124,6 @@ async function main() {
     console.log(`  - Dead / Timeout: ${deadNodes.length} ❌`);
 
     if (aliveNodes.length > 0) {
-      // Format each alive node remark according to the user standard:
-      // e.g.: "🇩🇪 DE - Frankfurt | 120ms #01"
       const isChainMode = !!config.chainProxy;
       const formattedNodes: string[] = aliveNodes.map((node, index) => {
         const orderNum = String(index + 1).padStart(2, '0');
@@ -80,9 +137,6 @@ async function main() {
         return `${baseWithoutHash}#${encodeURIComponent(newRemark)}`;
       });
 
-      // Save enhanced/chain file with distinct suffix:
-      // Direct mode -> .enhanced.txt
-      // Chain mode  -> .chain.txt
       const baseName = file.replace(/\.enhanced\.txt$/, '').replace(/\.chain\.txt$/, '').replace(/\.txt$/, '');
       const outputSuffix = isChainMode ? '.chain.txt' : '.enhanced.txt';
       const outputFileName = `${baseName}${outputSuffix}`;
