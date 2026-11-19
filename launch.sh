@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# cf-sub interactive management launcher
+# cloudflare-sub-manager interactive management launcher
 # ==============================================================================
 set -e
 
@@ -113,7 +113,7 @@ do_whoami() {
 
 menu_gum() {
   while true; do
-    echo -e "\n${BOLD}${CYAN}🚀 cf-sub Management Menu${NC}"
+    echo -e "\n${BOLD}${CYAN}🚀 cloudflare-sub-manager Management Menu${NC}"
     local choice
     choice=$(gum choose \
       "1. Local Web GUI (Test with Xray & Clean Configs)" \
@@ -134,7 +134,7 @@ menu_gum() {
 
 menu_fallback() {
   while true; do
-    echo -e "\n${BOLD}${CYAN}================ cf-sub Launcher ================${NC}"
+    echo -e "\n${BOLD}${CYAN}================ cloudflare-sub-manager Launcher ================${NC}"
     echo -e "1) Open Local Web GUI (${YELLOW}pnpm run gui${NC})"
     echo -e "2) Deploy to Cloudflare (${YELLOW}wrangler deploy${NC})"
     echo -e "3) Set Cloudflare secret (${YELLOW}wrangler secret put${NC})"

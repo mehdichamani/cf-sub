@@ -1,4 +1,4 @@
-# 🌐 Cloudflare Subscription Provider & Local Xray Tester (`cf-sub`)
+# 🌐 Cloudflare Subscription Provider & Local Xray Tester (`cloudflare-sub-manager`)
 
 یک پروژه سبک، مینیمال و دو‌منظوره برای:
 1. **میزبانی فایل‌های `.txt` و `.json` به عنوان سابسکریپشن کلاینت‌های V2Ray، Sing-box، Hiddify و... روی کلودفلر ورکر.**
@@ -32,7 +32,7 @@
 ## 📁 ساختار پروژه
 
 ```text
-cf-sub/
+cloudflare-sub-manager/
 ├── profiles/            # پوشه قرارگیری فایل‌های کانفیگ (.txt و .json)
 ├── tools/
 │   ├── gui-server.ts    # سرور رابط وب تستر محلی با Xray

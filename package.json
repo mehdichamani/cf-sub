@@ -1,5 +1,5 @@
 {
-  "name": "cf-sub",
+  "name": "cloudflare-sub-manager",
   "version": "1.0.0",
   "description": "Cloudflare Worker V2Ray subscription provider serving nodes from .txt files with URL secret security",
   "main": "src/index.ts",
