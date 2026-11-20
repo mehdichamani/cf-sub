@@ -6,6 +6,7 @@ dist/
 .env.*
 *.log
 .DS_Store
+profiles
 profiles/
 profiles_archive/
 src/generated-profiles.ts

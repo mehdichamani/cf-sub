@@ -92,6 +92,14 @@ files.forEach((file) => {
     }
   }
 
+  // Extract tags from filename parts separated by '_'
+  const filenameTags = baseNameWithoutExt
+    .split('_')
+    .map((s) => s.trim())
+    .filter((s) => Boolean(s));
+
+  const allTags = Array.from(new Set([...(meta.tags || []), ...filenameTags]));
+
   entriesCode +=
     `  ${JSON.stringify(id)}: {\n` +
     `    id: ${JSON.stringify(id)},\n` +
@@ -105,7 +113,7 @@ files.forEach((file) => {
     `    description: ${JSON.stringify(meta.description || '')},\n` +
     `    author: ${JSON.stringify(meta.author || '')},\n` +
     `    client: ${JSON.stringify(meta.client || '')},\n` +
-    `    tags: ${JSON.stringify(meta.tags || [])},\n` +
+    `    tags: ${JSON.stringify(allTags)},\n` +
     `  },\n`;
 });
 

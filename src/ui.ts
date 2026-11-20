@@ -158,6 +158,13 @@ export function renderLoginPage(errorMessage = ''): string {
 export function renderDashboard(secret: string, origin: string): string {
   const profileList = Object.values(PROFILES);
 
+  // Collect unique tags sorted alphabetically
+  const tagSet = new Set<string>();
+  profileList.forEach((p) => {
+    (p.tags || []).forEach((t) => tagSet.add(t));
+  });
+  const allUniqueTags = Array.from(tagSet).sort();
+
   return `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -178,7 +185,7 @@ export function renderDashboard(secret: string, origin: string): string {
       max-width: 820px;
     }
     header {
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -207,8 +214,73 @@ export function renderDashboard(secret: string, origin: string): string {
       border-radius: 9999px;
       font-weight: 600;
     }
+
+    /* Tag filter bar */
+    .filter-section {
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      background: rgba(14, 18, 27, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 0.85rem 1rem;
+    }
+    .search-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      background: rgba(7, 9, 14, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.85rem;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--red);
+    }
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .tag-filter-btn {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: var(--mono-font);
+      user-select: none;
+    }
+    .tag-filter-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fff;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .tag-filter-btn.active {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+      box-shadow: 0 0 8px var(--red-glow);
+    }
+    .items-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-inline-start: auto;
+    }
     
-    /* Clean, flat list of cards without indentation */
+    /* Clean, flat list of cards */
     .links-list {
       display: flex;
       flex-direction: column;
@@ -231,6 +303,9 @@ export function renderDashboard(secret: string, origin: string): string {
       background: var(--card-hover);
       border-color: rgba(239, 68, 68, 0.45);
       box-shadow: 0 4px 15px rgba(239, 68, 68, 0.08);
+    }
+    .link-row.hidden {
+      display: none !important;
     }
     
     .link-meta {
@@ -275,6 +350,26 @@ export function renderDashboard(secret: string, origin: string): string {
       overflow-wrap: break-word;
       direction: ltr;
       text-align: left;
+    }
+
+    .row-tags {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+    }
+    .tag-badge {
+      font-size: 0.65rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: var(--mono-font);
+      cursor: pointer;
+    }
+    .tag-badge:hover {
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #f87171;
     }
 
     .link-actions {
@@ -387,6 +482,16 @@ export function renderDashboard(secret: string, origin: string): string {
       transform: translateY(0);
     }
 
+    #noResultsMsg {
+      display: none;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 2.5rem;
+      background: var(--card-bg);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+    }
+
     @media (max-width: 600px) {
       .link-row {
         flex-direction: column;
@@ -426,8 +531,23 @@ export function renderDashboard(secret: string, origin: string): string {
       <span class="header-tag">Anti-Censorship Sub</span>
     </header>
 
-    <div class="links-list">
+    <!-- Tag & Search Filter Section -->
+    <div class="filter-section">
+      <div class="search-row">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجوی سریع نام پروفایل یا تگ..." oninput="applyFilters()" />
+        <span id="itemsCount" class="items-count">${profileList.length} مورد</span>
+      </div>
+      <div class="tags-container">
+        <button class="tag-filter-btn active" data-tag="ALL" onclick="selectTag('ALL')">همه (All)</button>
+        ${allUniqueTags
+          .map((t) => `<button class="tag-filter-btn" data-tag="${t}" onclick="selectTag('${t}')">${t}</button>`)
+          .join('')}
+      </div>
+    </div>
+
+    <div class="links-list" id="linksList">
       ${profileList.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:3rem;">هیچ فایلی در پوشه profiles یافت نشد.</div>' : ''}
+      <div id="noResultsMsg">موردی متناسب با فیلترها یافت نشد.</div>
       ${profileList
         .map((p) => {
           const isJson = p.format === 'json';
@@ -450,11 +570,19 @@ export function renderDashboard(secret: string, origin: string): string {
             badgeText = 'YAML';
           }
 
+          const tags = p.tags || [];
+          const tagsAttr = tags.join(',').toLowerCase();
+
           return `
-            <div class="link-row">
+            <div class="link-row" data-filename="${p.filename.toLowerCase()}" data-tags="${tagsAttr}">
               <div class="link-meta">
                 <span class="format-pill ${badgeClass}">${badgeText}</span>
                 <span class="link-name">${p.filename}</span>
+                ${tags.length > 0 ? `
+                  <div class="row-tags">
+                    ${tags.map((t) => `<span class="tag-badge" onclick="selectTag('${t}')">#${t}</span>`).join('')}
+                  </div>
+                ` : ''}
               </div>
               <div class="link-actions">
                 <button class="btn btn-red" onclick="copyUrl('${targetUrl}')">📋 کپی لینک</button>
@@ -482,7 +610,58 @@ export function renderDashboard(secret: string, origin: string): string {
   <div id="toast" class="toast">لینک کپی شد! ✅</div>
 
   <script>
+    let activeTag = 'ALL';
     let qrInstance = null;
+
+    function selectTag(tag) {
+      activeTag = tag;
+      document.querySelectorAll('.tag-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-tag') === tag) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const rows = document.querySelectorAll('.link-row');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const filename = row.getAttribute('data-filename') || '';
+        const tags = (row.getAttribute('data-tags') || '').split(',');
+
+        let matchTag = (activeTag === 'ALL');
+        if (!matchTag) {
+          matchTag = tags.some(t => t.toLowerCase() === activeTag.toLowerCase());
+        }
+
+        let matchQuery = true;
+        if (query) {
+          matchQuery = filename.includes(query) || tags.some(t => t.includes(query));
+        }
+
+        if (matchTag && matchQuery) {
+          row.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+
+      const countEl = document.getElementById('itemsCount');
+      if (countEl) {
+        countEl.textContent = visibleCount + ' مورد';
+      }
+
+      const noResults = document.getElementById('noResultsMsg');
+      if (noResults) {
+        noResults.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+      }
+    }
 
     function openQrModal(title, url) {
       document.getElementById('modalTitle').textContent = title;
