@@ -10,7 +10,7 @@ export interface Env {
   };
 }
 
-export type ProfileFormat = 'txt' | 'json';
+export type ProfileFormat = 'txt' | 'json' | 'yaml';
 
 export interface ProfileMetadata {
   name?: string;

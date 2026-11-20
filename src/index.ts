@@ -1,5 +1,5 @@
 import { Env, FilterOptions } from './types';
-import { formatAsBase64, formatAsRaw, getNodesForProfile, PROFILES } from './nodes';
+import { formatAsBase64, formatAsRaw, getNodesForProfile, PROFILES, findProfile } from './nodes';
 import { renderLoginPage, renderDashboard } from './ui';
 
 /**
@@ -131,13 +131,14 @@ export default {
       });
     }
 
-    // Direct JSON Profile Serving (e.g. Sing-box or Xray full configs)
-    if (targetProfile && PROFILES[targetProfile] && PROFILES[targetProfile].format === 'json') {
-      const p = PROFILES[targetProfile];
-      return new Response(p.content, {
+    // Direct Profile Serving (e.g. Sing-box/Xray JSON configs or Clash YAML configs)
+    const profileObj = findProfile(targetProfile);
+    if (profileObj && (profileObj.format === 'json' || profileObj.format === 'yaml')) {
+      const isJson = profileObj.format === 'json';
+      return new Response(profileObj.content, {
         headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Content-Disposition': `inline; filename="${p.filename}"`,
+          'Content-Type': isJson ? 'application/json; charset=utf-8' : 'text/yaml; charset=utf-8',
+          'Content-Disposition': `inline; filename="${profileObj.filename}"`,
           'Cache-Control': 'private, no-cache, no-store, must-revalidate',
           'Access-Control-Allow-Origin': '*',
         },
@@ -191,7 +192,7 @@ export default {
     }
 
     // Profile metadata
-    const activeProfileName = targetProfile && PROFILES[targetProfile] ? PROFILES[targetProfile].name : env.SUB_NAME || 'V2Ray Sub';
+    const activeProfileName = profileObj ? profileObj.name : env.SUB_NAME || 'V2Ray Sub';
     const profileTitle = env.PROFILE_TITLE || activeProfileName;
     const titleBase64 = Buffer.from(profileTitle, 'utf-8').toString('base64');
 

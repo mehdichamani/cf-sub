@@ -1,8 +1,22 @@
 // Dynamically generated profiles from profiles/ folder
 import { PROFILES } from './generated-profiles';
-import { Env, FilterOptions, NodeItem } from './types';
+import { Env, FilterOptions, NodeItem, ProfileInfo } from './types';
 
 export { PROFILES };
+
+export function findProfile(identifier: string | undefined): ProfileInfo | undefined {
+  if (!identifier) return undefined;
+  if (PROFILES[identifier]) return PROFILES[identifier];
+  
+  // Fallback search by filename or id without extension
+  const allProfiles: ProfileInfo[] = Object.values(PROFILES);
+  for (const p of allProfiles) {
+    if (p.filename === identifier || p.id === identifier) return p;
+    const base: string = p.filename.replace(/\.[^.]+$/, '');
+    if (base === identifier) return p;
+  }
+  return undefined;
+}
 
 /**
  * Extract remark (name/label) from a node link
@@ -83,9 +97,9 @@ export async function getNodesForProfile(
   const allNodes: NodeItem[] = [];
   const seenRaw = new Set<string>();
 
-  if (profileId && PROFILES[profileId]) {
-    const profile = PROFILES[profileId];
-    for (const node of parseNodesFromText(profile.content, profile.filename)) {
+  const matchedProfile = findProfile(profileId);
+  if (matchedProfile) {
+    for (const node of parseNodesFromText(matchedProfile.content, matchedProfile.filename)) {
       if (!seenRaw.has(node.raw)) {
         seenRaw.add(node.raw);
         allNodes.push(node);
@@ -94,7 +108,7 @@ export async function getNodesForProfile(
   } else {
     // If no specific profile is requested, load all non-enhanced and text-based profiles
     for (const [id, profile] of Object.entries(PROFILES)) {
-      if (id.includes('.enhanced') || profile.format === 'json') continue; // Skip enhanced and JSON full configs in collective URI view
+      if (id.includes('.enhanced') || profile.format !== 'txt') continue; // Skip enhanced, JSON, and YAML full configs in collective URI view
       for (const node of parseNodesFromText(profile.content, profile.filename)) {
         if (!seenRaw.has(node.raw)) {
           seenRaw.add(node.raw);

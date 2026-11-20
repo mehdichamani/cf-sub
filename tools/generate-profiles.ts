@@ -34,7 +34,7 @@ if (fs.existsSync(metaFile)) {
 
 const files = fs
   .readdirSync(profilesDir)
-  .filter((f) => f.endsWith('.txt') || f.endsWith('.json'))
+  .filter((f) => f.endsWith('.txt') || f.endsWith('.json') || f.endsWith('.yaml') || f.endsWith('.yml'))
   .sort((a, b) => {
     const aEnh = a.includes('.enhanced.');
     const bEnh = b.includes('.enhanced.');
@@ -49,20 +49,27 @@ files.forEach((file) => {
   const filePath = path.join(profilesDir, file);
   const rawContent = fs.readFileSync(filePath, 'utf-8');
   const isJson = file.endsWith('.json');
-  const ext = isJson ? '.json' : '.txt';
-  const id = file.slice(0, -ext.length);
+  const isYaml = file.endsWith('.yaml') || file.endsWith('.yml');
+  const format = isJson ? 'json' : isYaml ? 'yaml' : 'txt';
+  
+  // Use unique ID per file (include extension so identical basenames with different formats never collide)
+  const id = file;
   const isEnhanced = file.includes('.enhanced.');
   const isChain = file.includes('.chain.');
 
-  let baseGroup = id;
+  const extMatch = file.match(/\.(txt|json|ya?ml)$/i);
+  const ext = extMatch ? extMatch[0] : '';
+  const baseNameWithoutExt = file.slice(0, -ext.length);
+
+  let baseGroup = baseNameWithoutExt;
   if (isChain) {
-    baseGroup = id.replace(/\.chain$/, '');
+    baseGroup = baseGroup.replace(/\.chain$/, '');
   } else if (isEnhanced) {
-    baseGroup = id.replace(/\.enhanced$/, '');
+    baseGroup = baseGroup.replace(/\.enhanced$/, '');
   }
 
   // Get user-provided metadata from profiles.yaml
-  const meta: ProfileMetadata = profilesMeta[id] || profilesMeta[baseGroup] || {};
+  const meta: ProfileMetadata = profilesMeta[id] || profilesMeta[baseNameWithoutExt] || profilesMeta[baseGroup] || {};
 
   let displayName = meta.name;
   if (!displayName) {
@@ -72,6 +79,8 @@ files.forEach((file) => {
       displayName = `${baseGroup} (⚡ Enhanced & Fast)`;
     } else if (isJson) {
       displayName = `${baseGroup} (📄 Full Config JSON)`;
+    } else if (isYaml) {
+      displayName = `${baseGroup} (📄 Config YAML)`;
     } else {
       displayName = `${baseGroup} (اصل / کامل)`;
     }
@@ -88,7 +97,7 @@ files.forEach((file) => {
     `    id: ${JSON.stringify(id)},\n` +
     `    name: ${JSON.stringify(displayName)},\n` +
     `    filename: ${JSON.stringify(file)},\n` +
-    `    format: ${JSON.stringify(isJson ? 'json' : 'txt')},\n` +
+    `    format: ${JSON.stringify(format)},\n` +
     `    content: ${JSON.stringify(rawContent)},\n` +
     `    isEnhanced: ${isEnhanced},\n` +
     `    isChain: ${isChain},\n` +

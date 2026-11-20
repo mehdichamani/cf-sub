@@ -219,7 +219,7 @@ export function renderDashboard(secret: string, origin: string): string {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 0.75rem;
-      padding: 0.9rem 1.1rem;
+      padding: 0.85rem 1.1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -236,17 +236,20 @@ export function renderDashboard(secret: string, origin: string): string {
     .link-meta {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       min-width: 0;
+      flex: 1;
+      flex-wrap: wrap;
     }
     .format-pill {
       font-family: var(--mono-font);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 0.2rem 0.5rem;
+      padding: 0.2rem 0.45rem;
       border-radius: 0.35rem;
       text-transform: uppercase;
       flex-shrink: 0;
+      line-height: 1.2;
     }
     .pill-json {
       background: rgba(168, 85, 247, 0.15);
@@ -258,25 +261,26 @@ export function renderDashboard(secret: string, origin: string): string {
       color: #f87171;
       border: 1px solid rgba(239, 68, 68, 0.3);
     }
-    .pill-chain {
-      background: rgba(234, 179, 8, 0.15);
-      color: #fde047;
-      border: 1px solid rgba(234, 179, 8, 0.3);
+    .pill-yaml {
+      background: rgba(14, 165, 233, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, 0.3);
     }
     
     .link-name {
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: #f3f4f6;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      direction: ltr;
+      text-align: left;
     }
 
     .link-actions {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
       flex-shrink: 0;
     }
 
@@ -386,12 +390,26 @@ export function renderDashboard(secret: string, origin: string): string {
     @media (max-width: 600px) {
       .link-row {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        align-items: stretch;
+        gap: 0.85rem;
+      }
+      .link-meta {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .link-actions {
         width: 100%;
-        justify-content: flex-end;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .link-actions .btn {
+        justify-content: center;
+        width: 100%;
       }
     }
   </style>
@@ -413,10 +431,10 @@ export function renderDashboard(secret: string, origin: string): string {
       ${profileList
         .map((p) => {
           const isJson = p.format === 'json';
-          const isChain = p.isChain;
+          const isYaml = p.format === 'yaml';
           let targetUrl = '';
 
-          if (isJson) {
+          if (isJson || isYaml) {
             targetUrl = `${origin}/${secret}?file=${encodeURIComponent(p.id)}`;
           } else {
             targetUrl = `${origin}/${secret}/sub?file=${encodeURIComponent(p.id)}`;
@@ -426,22 +444,21 @@ export function renderDashboard(secret: string, origin: string): string {
           let badgeText = 'TXT';
           if (isJson) {
             badgeClass = 'pill-json';
-            badgeText = 'SING-BOX / JSON';
-          } else if (isChain) {
-            badgeClass = 'pill-chain';
-            badgeText = 'CHAIN';
+            badgeText = 'JSON';
+          } else if (isYaml) {
+            badgeClass = 'pill-yaml';
+            badgeText = 'YAML';
           }
 
           return `
             <div class="link-row">
               <div class="link-meta">
                 <span class="format-pill ${badgeClass}">${badgeText}</span>
-                <span class="link-name">${p.name || p.filename}</span>
+                <span class="link-name">${p.filename}</span>
               </div>
               <div class="link-actions">
                 <button class="btn btn-red" onclick="copyUrl('${targetUrl}')">📋 کپی لینک</button>
-                <button class="btn btn-outline" onclick="openQrModal('${p.name || p.filename}', '${targetUrl}')">📱 QR</button>
-                <a href="${targetUrl}" target="_blank" class="btn btn-outline">${isJson ? '👁️ مشاهده' : '👁️ نودها'}</a>
+                <button class="btn btn-outline" onclick="openQrModal('${p.filename}', '${targetUrl}')">📱 QR</button>
               </div>
             </div>
           `;
